@@ -2,9 +2,13 @@
 import random
 import os
 import json
-import dotenv
+from dotenv import load_dotenv
 import vk_api
-from vkbottle import Keyboard, KeyboardButtonColor, Text, OpenLink
+from vkbottle import Keyboard, KeyboardButtonColor, Text
+
+load_dotenv()
+TOKEN = str(os.getenv('TOKEN'))
+PASSWORD = str(os.getenv('PASSWORD'))
 
 class VK :
     def __init__(self, token: str):
@@ -24,4 +28,14 @@ class VK :
                 'keyboard': keyboard,
                 'random_id': random.randint(1, 1000000000000)
                 })
+
+class Command :
+    def __init__(self, token: str):
+        self.vk = VK(token)
         
+    def add_admin(self, id: int) -> None :
+        with open('temp_data.json', 'r') as file :
+            data = json.load(file)
+        data['admin'].append(id)
+        with open('temp_data.json', 'w') as file :
+            json.dump(data, file, indent=4)
