@@ -3,8 +3,10 @@ import random
 import os
 import json
 import secrets
+import threading
 from dotenv import load_dotenv
-import vk_api
+from vk_api import VkApi
+from vk_api.longpoll import VkLongPoll, VkEventType
 from vkbottle import Keyboard, KeyboardButtonColor, Text
 
 load_dotenv()
@@ -19,7 +21,8 @@ def is_admin(u_id: int) -> bool :
 
 class VK :
     def __init__(self, token: str):
-        self.vk = vk_api.VkApi(token=token)
+        self.vk = VkApi(token=token)
+        self.longpoll = VkLongPoll(self.vk)
 
     def send_message(self, id: int, message: str) -> None :
         self.vk.method('messages.send', {
@@ -59,3 +62,23 @@ class Command :
         with open('temp_data.json', 'w') as file :
             json.dump(data, file, indent=4)
         self.vk.send_message(self.id, cod)
+
+threads = []
+vk = VK(TOKEN)
+users = []
+
+def logic(id: int, message: str) -> None :
+    
+
+def start_chat(id: int, message: str) -> None :
+    logic(id, message)
+    for event in vk.longpoll.listen() :
+        if event.type == VkEventType.MESSAGE_NEW and event.to_me and event.user_id == id :
+            logic(id, message)
+
+for event in vk.longpoll.listen() :
+    if event.type == VkEventType.MESSAGE_NEW and event.to_me and not event.user_id in users :
+        threads.append(threading.Thread(target=start_chat, args=(event.user_id, event.message)))
+        threads[-1].start()
+        threads[-1].join()
+        users.append(event.user_id)
