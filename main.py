@@ -70,12 +70,12 @@ class Command :
         for event in self.vk.longpoll.listen() :
             if event.type == VkEventType.MESSAGE_NEW and event.to_me and event.user_id == self.id :
                 name = event.message
-                exit
+                break
         vk.send_message(self.id, "Отправьте кол-во ед. предмета")
         for event in self.vk.longpoll.listen() :
             if event.type == VkEventType.MESSAGE_NEW and event.to_me and event.user_id == self.id :
                 num = event.message
-                exit
+                break
         with open('temp_data.json', 'r') as file :
             data = json.load(file)
         try :
@@ -92,13 +92,13 @@ class Command :
             data = json.load(file)
         if not message in data['cods'] :
             return None
-        keys = data['stuff'].keys()
-        values = data['stuff'].values()
+        keys = list(data['stuff'].keys())
+        values = list(data['stuff'].values())
         while 0 in values :
             i = values.index(0)
             keys.pop(i)
             values.pop(i)
-        if keys == [] :
+        if len(keys) == 0 :
             self.vk.send_message(self.id, "Извините, но сейчас нету призов!")
             return None
         data['cods'].remove(message)
@@ -118,7 +118,7 @@ class Command :
         self.vk.send_keyboard(self.id, msg, keyboard)
         for event in self.vk.longpoll.listen() :
             if event.type == VkEventType.MESSAGE_NEW and event.to_me and event.user_id == self.id :
-                exit
+                break
         keyboard = (
             Keyboard(one_time=True, inline=False)
             .add(Text("📦"), color=KeyboardButtonColor.PRIMARY)
@@ -136,17 +136,22 @@ class Command :
         self.vk.send_keyboard(self.id, "Выберите коробку", keyboard)
         for event in self.vk.longpoll.listen() :
             if event.type == VkEventType.MESSAGE_NEW and event.to_me and event.user_id == self.id :
-                exit
+                break
         chance = random.randint(1, 10)
         if chance <= 8 :
             self.vk.send_message(self.id, "Увы, но вам ничего не выпало!")
             return None
         stuff = []
         for i in range(0, len(keys)) :
-            for j in range(0, len(values[i])) :
+            for j in range(0, values[i]) :
                 stuff.append(keys[i])
         item = stuff[random.randint(0, len(stuff))]
-        self.vk.send_message(self.id, "Поздравляю! Вы выиграли {item}\nНапишите @kopatych000 для выдачи!")
+        with open('temp_data.json', 'r') as file :
+            data = json.load(file)
+        data['stuff'][item] -= 1
+        with open('temp_data.json', 'w') as file :
+            json.dump(data, file, indent=4)
+        self.vk.send_message(self.id, f"Поздравляю! Вы выиграли {item}\nНапишите @kopatych000 для выдачи!")
 
 vk = VK(TOKEN)
 threads = []
@@ -158,6 +163,8 @@ def logic(id: int, message: str) -> None :
         com.add_admin()
     elif message.lower() == "создать код" :
         com.mk_cod()
+    elif message.lower() == "добавить приз":
+        com.add_stuff()
     else :
         com.activate_cod(message)
 
@@ -165,7 +172,7 @@ def start_chat(id: int, message: str) -> None :
     logic(id, message)
     for event in vk.longpoll.listen() :
         if event.type == VkEventType.MESSAGE_NEW and event.to_me and event.user_id == id :
-            logic(id, message)
+            logic(id, event.message)
 
 for event in vk.longpoll.listen() :
     if event.type == VkEventType.MESSAGE_NEW and event.to_me and not event.user_id in users :
