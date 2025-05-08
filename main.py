@@ -70,12 +70,12 @@ class Command :
         for event in self.vk.longpoll.listen() :
             if event.type == VkEventType.MESSAGE_NEW and event.to_me and event.user_id == self.id :
                 name = event.message
-                exit
+                break
         vk.send_message(self.id, "Отправьте кол-во ед. предмета")
         for event in self.vk.longpoll.listen() :
             if event.type == VkEventType.MESSAGE_NEW and event.to_me and event.user_id == self.id :
                 num = event.message
-                exit
+                break
         with open('temp_data.json', 'r') as file :
             data = json.load(file)
         try :
@@ -98,7 +98,7 @@ class Command :
             i = values.index(0)
             keys.pop(i)
             values.pop(i)
-        if keys == [] :
+        if len(keys) == 0 :
             self.vk.send_message(self.id, "Извините, но сейчас нету призов!")
             return None
         data['cods'].remove(message)
@@ -118,7 +118,7 @@ class Command :
         self.vk.send_keyboard(self.id, msg, keyboard)
         for event in self.vk.longpoll.listen() :
             if event.type == VkEventType.MESSAGE_NEW and event.to_me and event.user_id == self.id :
-                exit
+                break
         keyboard = (
             Keyboard(one_time=True, inline=False)
             .add(Text("📦"), color=KeyboardButtonColor.PRIMARY)
@@ -136,7 +136,7 @@ class Command :
         self.vk.send_keyboard(self.id, "Выберите коробку", keyboard)
         for event in self.vk.longpoll.listen() :
             if event.type == VkEventType.MESSAGE_NEW and event.to_me and event.user_id == self.id :
-                exit
+                break
         chance = random.randint(1, 10)
         if chance <= 8 :
             self.vk.send_message(self.id, "Увы, но вам ничего не выпало!")
@@ -146,7 +146,7 @@ class Command :
             for j in range(0, len(values[i])) :
                 stuff.append(keys[i])
         item = stuff[random.randint(0, len(stuff))]
-        self.vk.send_message(self.id, "Поздравляю! Вы выиграли {item}\nНапишите @kopatych000 для выдачи!")
+        self.vk.send_message(self.id, f"Поздравляю! Вы выиграли {item}\nНапишите @kopatych000 для выдачи!")
 
 vk = VK(TOKEN)
 threads = []
