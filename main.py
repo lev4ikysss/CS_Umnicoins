@@ -165,7 +165,7 @@ def start_chat(id: int, message: str) -> None :
     logic(id, message)
     for event in vk.longpoll.listen() :
         if event.type == VkEventType.MESSAGE_NEW and event.to_me and event.user_id == id :
-            logic(id, message)
+            logic(id, event.message)
 
 for event in vk.longpoll.listen() :
     if event.type == VkEventType.MESSAGE_NEW and event.to_me and not event.user_id in users :
