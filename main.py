@@ -158,6 +158,8 @@ def logic(id: int, message: str) -> None :
         com.add_admin()
     elif message.lower() == "создать код" :
         com.mk_cod()
+    elif message.lower() == "добавить приз":
+        com.add_stuff()
     else :
         com.activate_cod(message)
 
