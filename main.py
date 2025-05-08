@@ -92,8 +92,8 @@ class Command :
             data = json.load(file)
         if not message in data['cods'] :
             return None
-        keys = data['stuff'].keys()
-        values = data['stuff'].values()
+        keys = list(data['stuff'].keys())
+        values = list(data['stuff'].values())
         while 0 in values :
             i = values.index(0)
             keys.pop(i)
@@ -146,6 +146,11 @@ class Command :
             for j in range(0, len(values[i])) :
                 stuff.append(keys[i])
         item = stuff[random.randint(0, len(stuff))]
+        with open('temp_data.json', 'r') as file :
+            data = json.load(file)
+        data['stuff'][item] -= 1
+        with open('temp_data.json', 'w') as file :
+            json.dump(data, file, indent=4)
         self.vk.send_message(self.id, f"Поздравляю! Вы выиграли {item}\nНапишите @kopatych000 для выдачи!")
 
 vk = VK(TOKEN)
