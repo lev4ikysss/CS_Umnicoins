@@ -143,7 +143,7 @@ class Command :
             return None
         stuff = []
         for i in range(0, len(keys)) :
-            for j in range(0, len(values[i])) :
+            for j in range(0, values[i]) :
                 stuff.append(keys[i])
         item = stuff[random.randint(0, len(stuff))]
         with open('temp_data.json', 'r') as file :
