@@ -151,7 +151,7 @@ class Command :
         data['stuff'][item] -= 1
         with open('temp_data.json', 'w') as file :
             json.dump(data, file, indent=4)
-        self.vk.send_message(self.id, f"Поздравляю! Вы выиграли {item}\nНапишите @kopatych000 для выдачи!")
+        self.vk.send_message(self.id, f"Поздравляю! Вы выиграли {item}\nНапишите @luckybox111 для выдачи!")
 
 vk = VK(TOKEN)
 threads = []
