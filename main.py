@@ -39,8 +39,6 @@ class VK :
                 'random_id': random.randint(1, 1000000000000)
                 })
 
-vk = VK(TOKEN)
-
 class Command :
     def __init__(self, token: str, u_id: int):
         self.vk = VK(token)
@@ -69,13 +67,15 @@ class Command :
         if not is_admin(self.id) :
             return None
         vk.send_message(self.id, "Отправьте название предмета")
-        for event in vk.longpoll.listen() :
-            if event.type == VkEventType.MESSAGE_NEW and event.to_me and event.user_id == id :
+        for event in self.vk.longpoll.listen() :
+            if event.type == VkEventType.MESSAGE_NEW and event.to_me and event.user_id == self.id :
                 name = event.message
+                exit
         vk.send_message(self.id, "Отправьте кол-во ед. предмета")
-        for event in vk.longpoll.listen() :
-            if event.type == VkEventType.MESSAGE_NEW and event.to_me and event.user_id == id :
+        for event in self.vk.longpoll.listen() :
+            if event.type == VkEventType.MESSAGE_NEW and event.to_me and event.user_id == self.id :
                 num = event.message
+                exit
         with open('temp_data.json', 'r') as file :
             data = json.load(file)
         try :
@@ -86,7 +86,38 @@ class Command :
             vk.send_message(self.id, "Вы ввели не число!")
             return None
         vk.send_message(self.id, "Успешно!")
+    
+    def activate_cod(self, message: str) -> None :
+        with open('temp_data.json', 'r') as file :
+            data = json.load(file)
+        if not message in data['cods'] :
+            return None
+        data['cods'].remove(message)
+        with open('temp_data.json', 'w') as file :
+            json.dump(data, file, indent=4)
+        keys = data['stuff'].keys()
+        values = data['stuff'].values()
+        while 0 in values :
+            i = values.index(0)
+            keys.pop(i)
+            values.pop(i)
+        if keys == [] :
+            self.vk.send_message(self.id, "Извините, но сейчас нету призов!")
+            return None
+        summ = sum(values)
+        msg = "Здравствуйте! Вы активировали промокод на розыгрыш призов!\nПримерные шансы на выигрыш:\n"
+        for i in range(0, len(keys)) :
+            key = keys[i]
+            chance = values[i]/(summ*5)
+            msg += f"{key}: {chance*100}%\n"
+        msg += "Нажмите кнопку \"Запуск\" для участия в розыгрыше."
+        keyboard = (
+            Keyboard(one_time=True, inline=False)
+            .add(Text("Запуск"), color=KeyboardButtonColor.PRIMARY)
+        )
+        self.vk.send_keyboard(self.id, msg, keyboard)
 
+vk = VK(TOKEN)
 threads = []
 users = []
 
@@ -96,6 +127,8 @@ def logic(id: int, message: str) -> None :
         com.add_admin()
     elif message.lower() == "создать код" :
         com.mk_cod()
+    else :
+        com.activate_cod(message)
 
 def start_chat(id: int, message: str) -> None :
     logic(id, message)
