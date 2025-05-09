@@ -67,15 +67,21 @@ class Command :
         if not is_admin(self.id) :
             return None
         vk.send_message(self.id, "Отправьте название предмета")
-        for event in self.vk.longpoll.listen() :
-            if event.type == VkEventType.MESSAGE_NEW and event.to_me and event.user_id == self.id :
-                name = event.message
-                break
+        try :
+            for event in self.vk.longpoll.listen() :
+                if event.type == VkEventType.MESSAGE_NEW and event.to_me and event.user_id == self.id :
+                    name = event.message
+                    break
+        except :
+            return None
         vk.send_message(self.id, "Отправьте кол-во ед. предмета")
-        for event in self.vk.longpoll.listen() :
-            if event.type == VkEventType.MESSAGE_NEW and event.to_me and event.user_id == self.id :
-                num = event.message
-                break
+        try :
+            for event in self.vk.longpoll.listen() :
+                if event.type == VkEventType.MESSAGE_NEW and event.to_me and event.user_id == self.id :
+                    num = event.message
+                    break
+        except :
+            return None
         with open('temp_data.json', 'r') as file :
             data = json.load(file)
         try :
@@ -116,9 +122,12 @@ class Command :
             .add(Text("Запуск"), color=KeyboardButtonColor.PRIMARY)
         ).get_json()
         self.vk.send_keyboard(self.id, msg, keyboard)
-        for event in self.vk.longpoll.listen() :
-            if event.type == VkEventType.MESSAGE_NEW and event.to_me and event.user_id == self.id :
-                break
+        try :
+            for event in self.vk.longpoll.listen() :
+                if event.type == VkEventType.MESSAGE_NEW and event.to_me and event.user_id == self.id :
+                    break
+        except :
+            return None
         keyboard = (
             Keyboard(one_time=True, inline=False)
             .add(Text("📦"), color=KeyboardButtonColor.PRIMARY)
@@ -134,17 +143,23 @@ class Command :
             .add(Text("📦"), color=KeyboardButtonColor.PRIMARY)
         ).get_json()
         self.vk.send_keyboard(self.id, "Выберите коробку", keyboard)
-        for event in self.vk.longpoll.listen() :
-            if event.type == VkEventType.MESSAGE_NEW and event.to_me and event.user_id == self.id :
-                break
+        try :
+            for event in self.vk.longpoll.listen() :
+                if event.type == VkEventType.MESSAGE_NEW and event.to_me and event.user_id == self.id :
+                    break
+        except :
+            return None
         chance = random.randint(1, 10)
         if chance <= 8 :
             self.vk.send_message(self.id, "Увы, но вам ничего не выпало!")
             return None
         stuff = []
-        for i in range(0, len(keys)) :
-            for j in range(0, values[i]) :
-                stuff.append(keys[i])
+        try :
+            for i in range(0, len(keys)) :
+                for j in range(0, values[i]) :
+                    stuff.append(keys[i])
+        except :
+            return None
         item = stuff[random.randint(0, len(stuff))]
         with open('temp_data.json', 'r') as file :
             data = json.load(file)
@@ -170,13 +185,21 @@ def logic(id: int, message: str) -> None :
 
 def start_chat(id: int, message: str) -> None :
     logic(id, message)
-    for event in vk.longpoll.listen() :
-        if event.type == VkEventType.MESSAGE_NEW and event.to_me and event.user_id == id :
-            logic(id, event.message)
+    while True :
+        try :
+            for event in vk.longpoll.listen() :
+                if event.type == VkEventType.MESSAGE_NEW and event.to_me and event.user_id == id :
+                    logic(id, event.message)
+        except :
+            pass
 
-for event in vk.longpoll.listen() :
-    if event.type == VkEventType.MESSAGE_NEW and event.to_me and not event.user_id in users :
-        threads.append(threading.Thread(target=start_chat, args=(event.user_id, event.message)))
-        threads[-1].start()
-        threads[-1].join()
-        users.append(event.user_id)
+while True :
+    try :
+        for event in vk.longpoll.listen() :
+            if event.type == VkEventType.MESSAGE_NEW and event.to_me and not event.user_id in users :
+                threads.append(threading.Thread(target=start_chat, args=(event.user_id, event.message)))
+                threads[-1].start()
+                threads[-1].join()
+                users.append(event.user_id)
+    except  :
+        pass
