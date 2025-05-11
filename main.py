@@ -186,6 +186,6 @@ while True :
     try :
         for event in vk.longpoll.listen() :
             if event.type == VkEventType.MESSAGE_NEW and event.to_me :
-                logic(event.id, event.message)
+                logic(event.user_id, event.message)
     except :
         pass
