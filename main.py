@@ -168,9 +168,6 @@ class Command :
             json.dump(data, file, indent=4)
         self.vk.send_message(self.id, f"Поздравляю! Вы выиграли {item}\nНапишите @luckybox111 для выдачи!")
 
-vk = VK(TOKEN)
-threads = []
-users = []
 
 def logic(id: int, message: str) -> None :
     com = Command(TOKEN, id)
@@ -183,23 +180,12 @@ def logic(id: int, message: str) -> None :
     else :
         com.activate_cod(message)
 
-def start_chat(id: int, message: str) -> None :
-    logic(id, message)
-    while True :
-        try :
-            for event in vk.longpoll.listen() :
-                if event.type == VkEventType.MESSAGE_NEW and event.to_me and event.user_id == id :
-                    logic(id, event.message)
-        except :
-            pass
+vk = VK(TOKEN)
 
 while True :
     try :
         for event in vk.longpoll.listen() :
-            if event.type == VkEventType.MESSAGE_NEW and event.to_me and not event.user_id in users :
-                threads.append(threading.Thread(target=start_chat, args=(event.user_id, event.message)))
-                threads[-1].start()
-                threads[-1].join()
-                users.append(event.user_id)
-    except  :
+            if event.type == VkEventType.MESSAGE_NEW and event.to_me :
+                logic(event.id, event.message)
+    except :
         pass
