@@ -43,6 +43,9 @@ class Command :
     def __init__(self, token: str, u_id: int):
         self.vk = VK(token)
         self.id = u_id
+
+    def start(self) -> None :
+        self.vk.send_message(self.id, "Отправьте мне промокод!")
         
     def add_admin(self) -> None :
         with open('temp_data.json', 'r') as file :
@@ -173,6 +176,8 @@ def logic(id: int, message: str) -> None :
     com = Command(TOKEN, id)
     if message == PASSWORD :
         com.add_admin()
+    elif message.lower() in ["начать", "старт"] :
+        com.start()
     elif message.lower() == "создать код" :
         com.mk_cod()
     elif message.lower() == "добавить приз":
